@@ -14,7 +14,7 @@ configs = load_config()
 def OpenAI_chat_completion(messages, temperature):    
     from openai import OpenAI
     client = OpenAI(
-        api_key=configs["API_KEY"]
+        api_key=configs["API_KEY"],
     )
     return client.chat.completions.create(
         model = configs["MODEL"],
@@ -48,7 +48,8 @@ def Anthropic_chat_completion(messages, temperature):
     return client.messages.create(
         model=configs["MODEL"],
         messages=messages,
-        temperature=temperature
+        temperature=temperature,
+        max_tokens=1024
     ).content
 
 # for 3-rd party API which is compatible with OpenAI API (with different 'API_BASE')

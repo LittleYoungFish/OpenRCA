@@ -13,8 +13,21 @@ from nbformat import v4 as nbf
 import pandas as pd
 import signal
 
-def handler(signum, frame):
-    raise TimeoutError("Loop execution exceeded the time limit")
+# handler(signum, frame):
+#    raise TimeoutError("Loop execution exceeded the time limit")
+
+class Tee(object):
+    def __init__(self, *files):
+        self.files = files
+
+    def write(self, obj):
+        for f in self.files:
+            f.write(obj)
+            f.flush()
+
+    def flush(self):
+        for f in self.files:
+            f.flush()
 
 def main(args, uid, dataset):
 
@@ -64,7 +77,7 @@ def main(args, uid, dataset):
         "hard": 0,
     }
 
-    signal.signal(signal.SIGALRM, handler)
+#    signal.signal(signal.SIGALRM, handler)
     logger.info(f"Using dataset: {dataset}")
     logger.info(f"Using model: {configs['MODEL'].split('/')[-1]}")
     
@@ -99,7 +112,7 @@ def main(args, uid, dataset):
             logger.add(logfile, colorize=True, enqueue=True, level="INFO")
             logger.debug('\n' + "#"*80 + f"\n{uuid}: {task_index}\n" + "#"*80)
             try: 
-                signal.alarm(args.timeout)
+#                signal.alarm(args.timeout)
 
                 agent = RCA_Agent(ap, bp)
                 prediction, trajectory, prompt = agent.run(instruction, 
@@ -107,7 +120,7 @@ def main(args, uid, dataset):
                                                        max_step=args.controller_max_step, 
                                                        max_turn=args.controller_max_turn)
                 
-                signal.alarm(0)
+#                signal.alarm(0)
 
                 for step in trajectory:
                     code_cell = nbf.new_code_cell(step['code'])
@@ -181,6 +194,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    f = open("output_log.txt", "w", encoding="utf-8")
+    sys.stdout = Tee(sys.stdout, f)
+
     if args.auto:
         print(f"Auto mode is on. Model is fixed to {configs['MODEL']}")
         datasets = ["Market/cloudbed-1", "Market/cloudbed-2", "Bank", "Telecom"]
@@ -189,3 +205,5 @@ if __name__ == "__main__":
     else:
         dataset = args.dataset
         main(args, uid, dataset)
+
+    f.close()

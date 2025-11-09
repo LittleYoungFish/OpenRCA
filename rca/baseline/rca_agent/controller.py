@@ -126,6 +126,7 @@ def control_loop(objective:str, plan:str, ap, bp, logger, max_step = 15, max_tur
 
         except Exception as e:
             logger.error(e)
+            response_raw = f"[ERROR] {str(e)}"  # ✅ 给 response_raw 一个默认值，防止报错
             prompt.append({'role': 'assistant', 'content': response_raw})
             prompt.append({'role': 'user', 'content': f"{str(e)}\nPlease provide your analysis in requested JSON format."})
             if 'context_length_exceeded' in str(e):
